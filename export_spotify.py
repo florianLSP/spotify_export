@@ -18,7 +18,7 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
 # export des titres likés
 tracks = []
 results = sp.current_user_saved_tracks()
-
+print("************************************************************************ \n ")
 print(f'Récupération en cours de {sp.current_user_saved_tracks(limit=1)["total"]} titres')
 while  results:
     for item in results['items']:
@@ -31,5 +31,25 @@ while  results:
 
 # sauvegarde des titres dans un fichier csv
 df = pandas.DataFrame(tracks, columns=["Titre", "Artiste"])
-df.to_csv("titres_likes.csv", index=False)
-print('Sauvegarde terminée.')
+df.to_csv("csv/titres_likes.csv", index=False)
+print('Export terminé. \n')
+print("************************************************************************ \n ")
+
+# Export playlists
+playlists = sp.current_user_playlists()
+for playlist in playlists['items']:
+    pl_tracks = []
+    results = sp.playlist_tracks(playlist['id'])
+    print(f'Récupération en cours des titres de la playlist {playlist["name"]}.')
+    while results:
+        for item in results['items']:
+            track = item['track']
+            if track:
+                pl_tracks.append([track['name'], track['artists'][0]['name']])
+        if results['next']:
+            results = sp.next(results)
+        else:
+            break
+    df = pandas.DataFrame(pl_tracks, columns=["Titre", "Artiste"])
+    df.to_csv(f"csv/playlists/{playlist['name']}.csv", index=False)
+print('Exports terminés. \n')
